@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NES Controller</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <link rel="manifest" href="manifest.json"> <!-- Optional PWA features -->
+</head>
+
+<body class="controller-body">
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen active">
+        <h1 class="logo">RETRO<span>NES</span></h1>
+        <div class="login-box">
+            <input type="number" id="session-input" placeholder="Enter 6-digit Code" maxlength="6">
+            <button id="join-btn" class="retro-btn">CONNECT</button>
+        </div>
+        <p id="error-msg" class="error hidden"></p>
+    </div>
+
+    <!-- Controller UI -->
+    <div id="controller-screen" class="screen hidden">
+        <div class="controller-layout">
+            <div class="dpad-area">
+                <div class="dpad">
+                    <div class="dpad-btn up" data-key="UP"></div>
+                    <div class="dpad-btn right" data-key="RIGHT"></div>
+                    <div class="dpad-btn down" data-key="DOWN"></div>
+                    <div class="dpad-btn left" data-key="LEFT"></div>
+                    <div class="dpad-center"></div>
+                </div>
+            </div>
+
+            <div class="center-area">
+                <div class="meta-btn-group">
+                    <div class="meta-btn-wrapper">
+                        <button class="meta-btn" data-key="SELECT"></button>
+                        <span>SELECT</span>
+                    </div>
+                    <div class="meta-btn-wrapper">
+                        <button class="meta-btn" data-key="START"></button>
+                        <span>START</span>
+                    </div>
+                </div>
+                <div class="menu-btn-wrapper">
+                    <button id="disconnect-btn">EXT</button>
+                </div>
+            </div>
+
+            <div class="action-area">
+                <div class="action-btn-wrapper b-btn">
+                    <button class="action-btn" data-key="B">B</button>
+                </div>
+                <div class="action-btn-wrapper a-btn">
+                    <button class="action-btn" data-key="A">A</button>
+                </div>
+            </div>
+        </div>
+        <div class="rotate-msg">
+            <p>⟳ Rotate for best experience</p>
+        </div>
+    </div>
+
+    <script src="controller.js"></script>
+</body>
+
+</html>

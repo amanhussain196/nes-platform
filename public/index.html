@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro NES Cloud</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/jsnes/dist/jsnes.min.js"></script>
+</head>
+<body class="host-body">
+    
+    <div id="app">
+        <!-- Connecting Screen / Landing -->
+        <div id="landing-screen" class="screen active">
+            <h1 class="logo">RETRO<span>NES</span></h1>
+            <div class="status-container">
+                <p>Connecting to server...</p>
+            </div>
+        </div>
+
+        <!-- Dashboard / Game Selection -->
+        <div id="dashboard-screen" class="screen hidden">
+            <header>
+                <div class="logo-small">RETRO<span>NES</span></div>
+                <div class="session-info">
+                    <span class="label">Session Code</span>
+                    <span id="session-code-display" class="code">------</span>
+                </div>
+            </header>
+            
+            <main>
+                <div class="connect-instruction">
+                    <div class="qr-box" id="qr-code-container">
+                        <!-- QR Code injected here -->
+                    </div>
+                    <div class="text-instructions">
+                        <h2>Scan to Play</h2>
+                        <p>Or visit <span id="manual-url" class="highlight">...</span> on your phone</p>
+                        <p class="sub">Enter code: <span id="text-code" class="highlight">...</span></p>
+                    </div>
+                </div>
+
+                <div class="game-list-container">
+                    <h3>Select a Game</h3>
+                    <div id="game-list" class="game-grid">
+                        <!-- Games will be injected here -->
+                    </div>
+                    <div id="no-games-msg" class="hidden">No ROMs found in /roms. Add .nes files to the server.</div>
+                </div>
+            </main>
+        </div>
+
+        <!-- Game Screen -->
+        <div id="game-screen" class="screen hidden">
+            <div class="game-wrapper">
+                <canvas id="nes-canvas" width="256" height="240"></canvas>
+            </div>
+            <div class="overlay-ui">
+                <div class="controller-status">
+                    <span class="status-dot disconnected" id="controller-dot"></span>
+                    <span id="controller-status-text">Waiting for controller...</span>
+                </div>
+                <button id="exit-game-btn" class="retro-btn">EXIT GAME</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="host.js"></script>
+</body>
+</html>
