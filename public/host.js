@@ -92,19 +92,42 @@ function loadGames() {
         });
 }
 
+// Helper to safely convert buffer to binary string
+function binaryStringFromBuffer(buffer) {
+    let binary = '';
+    const bytes = new Uint8Array(buffer);
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return binary;
+}
+
 function startGame(filename) {
     dashboardScreen.classList.add('hidden');
     gameScreen.classList.remove('hidden');
     gameScreen.classList.add('active'); // ensure active class for transitions
 
     // Fetch ROM
+    console.log(`Fetching ROM: ${filename}`);
     fetch(`/roms/${filename}`)
-        .then(res => res.arrayBuffer())
+        .then(res => {
+            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+            return res.arrayBuffer();
+        })
         .then(buffer => {
+            console.log(`ROM loaded, size: ${buffer.byteLength} bytes`);
             currentRomData = new Uint8Array(buffer);
             initNES();
         })
-        .catch(err => console.error("Error loading ROM:", err));
+        .catch(err => {
+            console.error("Error loading ROM:", err);
+            alert(`Failed to load game: ${filename}`);
+            // Return to dashboard
+            gameScreen.classList.add('hidden');
+            gameScreen.classList.remove('active');
+            dashboardScreen.classList.remove('hidden');
+        });
 }
 
 // --- NES Emulator Setup (JSNES) ---
@@ -151,9 +174,11 @@ function initNES() {
 
     // Load ROM
     try {
-        nes.loadROM(String.fromCharCode.apply(null, currentRomData)); // JSNES requires binary string
+        const binaryString = binaryStringFromBuffer(currentRomData);
+        nes.loadROM(binaryString); // JSNES requires binary string
     } catch (e) {
-        console.error("ROM Load Error", e); // Fallback: binary string conversion might fail on large files or specific encodings without newer TextDecoder
+        console.error("ROM Load Error", e);
+        alert("Emulator crashed while loading ROM.");
     }
 
     // Start Loop
