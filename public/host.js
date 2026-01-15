@@ -232,7 +232,6 @@ function initNES() {
     }
 
     // Start Loop
-    // Start Loop
     function onAnimationFrame() {
         if (!gameScreen.classList.contains('hidden')) {
             window.requestAnimationFrame(onAnimationFrame);
@@ -268,20 +267,7 @@ const KEYMAP = {
     'SELECT': jsnes.Controller.BUTTON_SELECT
 };
 
-// Handle Socket Input
-socket.on('input', (data) => {
-    // data: { button: 'UP', type: 'down'/'up' }
-    if (!nes) return;
 
-    const button = KEYMAP[data.button];
-    if (button === undefined) return;
-
-    if (data.type === 'down') {
-        nes.buttonDown(1, button); // Player 1
-    } else {
-        nes.buttonUp(1, button);
-    }
-});
 
 // Handle Keyboard Input (Fallback & TV Remote)
 document.addEventListener('keydown', (e) => {
