@@ -22,7 +22,8 @@
 body {
     background-color: var(--bg-color);
     color: var(--text-color);
-    overflow: hidden; /* Prevent scrolling mostly */
+    overflow: hidden;
+    /* Prevent scrolling mostly */
     height: 100vh;
     width: 100vw;
 }
@@ -34,13 +35,16 @@ body {
     letter-spacing: -2px;
     margin-bottom: 2rem;
 }
+
 .logo span {
     color: var(--accent-color);
 }
+
 .logo-small {
     font-size: 1.5rem;
     font-weight: 700;
 }
+
 .logo-small span {
     color: var(--accent-color);
 }
@@ -65,6 +69,7 @@ body {
     pointer-events: none;
     z-index: -1;
 }
+
 .screen.active {
     opacity: 1;
     z-index: 10;
@@ -84,12 +89,14 @@ body {
 .session-info {
     text-align: right;
 }
+
 .session-info .label {
     display: block;
     font-size: 0.8rem;
     opacity: 0.7;
     margin-bottom: 0.2rem;
 }
+
 .session-info .code {
     font-size: 2rem;
     font-family: monospace;
@@ -122,6 +129,7 @@ body {
     border-radius: 10px;
     margin-bottom: 2rem;
 }
+
 .qr-box img {
     width: 100%;
     height: 100%;
@@ -130,11 +138,13 @@ body {
 .text-instructions h2 {
     margin-bottom: 1rem;
 }
+
 .text-instructions p {
     font-size: 1.1rem;
     color: #aaa;
     margin-bottom: 0.5rem;
 }
+
 .highlight {
     color: var(--secondary-color);
     font-weight: bold;
@@ -145,12 +155,14 @@ body {
     padding: 3rem;
     overflow-y: auto;
 }
+
 .game-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 1.5rem;
     margin-top: 2rem;
 }
+
 .game-card {
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
@@ -160,16 +172,19 @@ body {
     cursor: pointer;
     transition: all 0.2s ease;
 }
+
 .game-card:hover {
     background: rgba(255, 255, 255, 0.1);
     border-color: var(--secondary-color);
     transform: translateY(-5px);
 }
+
 .game-card .icon {
     font-size: 2rem;
     margin-bottom: 1rem;
     display: block;
 }
+
 .game-card .name {
     font-size: 0.9rem;
     font-weight: 600;
@@ -188,7 +203,8 @@ body {
 
 canvas {
     image-rendering: pixelated;
-    height: 100%; /* Default to full height */
+    height: 100%;
+    /* Default to full height */
     aspect-ratio: 256/240;
     background: #000;
 }
@@ -201,8 +217,9 @@ canvas {
     flex-direction: column;
     gap: 10px;
 }
+
 .controller-status {
-    background: rgba(0,0,0,0.7);
+    background: rgba(0, 0, 0, 0.7);
     padding: 8px 16px;
     border-radius: 20px;
     display: flex;
@@ -210,6 +227,7 @@ canvas {
     gap: 8px;
     font-size: 0.8rem;
 }
+
 .status-dot {
     width: 8px;
     height: 8px;
@@ -217,6 +235,7 @@ canvas {
     background: #555;
     box-shadow: 0 0 5px #555;
 }
+
 .status-dot.connected {
     background: #00ff00;
     box-shadow: 0 0 8px #00ff00;
@@ -234,6 +253,7 @@ canvas {
     width: 80%;
     max-width: 300px;
 }
+
 input {
     background: var(--glass-bg);
     border: 1px solid var(--glass-border);
@@ -244,9 +264,11 @@ input {
     text-align: center;
     outline: none;
 }
+
 input:focus {
     border-color: var(--secondary-color);
 }
+
 .retro-btn {
     background: var(--accent-color);
     border: none;
@@ -259,6 +281,7 @@ input:focus {
     text-transform: uppercase;
     transition: transform 0.1s;
 }
+
 .retro-btn:active {
     transform: scale(0.95);
 }
@@ -273,7 +296,9 @@ input:focus {
     gap: 10px;
 }
 
-.dpad-area, .action-area, .center-area {
+.dpad-area,
+.action-area,
+.center-area {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -282,63 +307,112 @@ input:focus {
 /* D-Pad */
 .dpad {
     position: relative;
-    width: 180px;
-    height: 180px;
+    width: 200px;
+    height: 200px;
+    background: #2a2a35;
+    /* Visual guide for thumb area */
+    border-radius: 50%;
 }
+
 .dpad-btn {
     position: absolute;
     background: #333;
     border-radius: 5px;
     cursor: pointer;
     box-shadow: 0 4px 0 #111;
+    z-index: 2;
 }
-.dpad-btn:active {
-    background: #444;
+
+.dpad-btn:active,
+.dpad-btn.active {
+    background: #555;
+    /* Lighter on press */
     transform: translateY(2px);
     box-shadow: 0 2px 0 #111;
 }
-.dpad .up { top: 0; left: 60px; width: 60px; height: 60px; border-radius: 5px 5px 0 0; }
-.dpad .down { bottom: 0; left: 60px; width: 60px; height: 60px; border-radius: 0 0 5px 5px; }
-.dpad .left { top: 60px; left: 0; width: 60px; height: 60px; border-radius: 5px 0 0 5px; }
-.dpad .right { top: 60px; right: 0; width: 60px; height: 60px; border-radius: 0 5px 5px 0; }
+
+/* 
+   Improved D-Pad Layout for Diagonals
+   We make the buttons slightly larger and closer together.
+   Or we can use a cross shape.
+*/
+.dpad .up {
+    top: 10px;
+    left: 70px;
+    width: 60px;
+    height: 70px;
+    border-radius: 5px 5px 0 0;
+}
+
+.dpad .down {
+    bottom: 10px;
+    left: 70px;
+    width: 60px;
+    height: 70px;
+    border-radius: 0 0 5px 5px;
+}
+
+.dpad .left {
+    top: 70px;
+    left: 10px;
+    width: 70px;
+    height: 60px;
+    border-radius: 5px 0 0 5px;
+}
+
+.dpad .right {
+    top: 70px;
+    right: 10px;
+    width: 70px;
+    height: 60px;
+    border-radius: 0 5px 5px 0;
+}
+
 .dpad-center {
     position: absolute;
-    top: 60px;
-    left: 60px;
+    top: 70px;
+    left: 70px;
     width: 60px;
     height: 60px;
     background: #333;
+    z-index: 2;
 }
 
 /* Action Buttons */
 .action-area {
-    gap: 20px;
+    gap: 30px;
     position: relative;
-    top: 20px; /* Slight offset ergonomic */
+    top: 20px;
 }
-.action-btn-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
+
 .action-btn {
-    width: 80px;
-    height: 80px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
     border: none;
     font-size: 1.5rem;
     font-weight: bold;
     color: #eee;
-    box-shadow: 0 5px 0 rgba(0,0,0,0.3);
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.5);
     cursor: pointer;
     transition: transform 0.05s;
 }
-.action-btn:active {
-    transform: translateY(3px);
-    box-shadow: 0 2px 0 rgba(0,0,0,0.3);
+
+.action-btn:active,
+.action-btn.active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 rgba(0, 0, 0, 0.5);
 }
-.a-btn .action-btn { background: var(--accent-color); top: -20px; position: relative;}
-.b-btn .action-btn { background: #d32f2f; }
+
+.a-btn .action-btn {
+    background: var(--accent-color);
+    top: -30px;
+    position: relative;
+}
+
+.b-btn .action-btn {
+    background: #d32f2f;
+}
 
 /* Center Buttons */
 .center-area {
@@ -347,22 +421,26 @@ input:focus {
     padding-bottom: 40px;
     gap: 20px;
 }
+
 .meta-btn-group {
     display: flex;
     gap: 15px;
 }
+
 .meta-btn-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 5px;
 }
+
 .meta-btn-wrapper span {
     font-size: 0.7rem;
     font-weight: bold;
     letter-spacing: 1px;
     color: #aaa;
 }
+
 .meta-btn {
     width: 60px;
     height: 20px;
@@ -371,10 +449,12 @@ input:focus {
     border: none;
     box-shadow: 0 3px 0 #222;
 }
+
 .meta-btn:active {
     transform: translateY(2px);
     box-shadow: 0 1px 0 #222;
 }
+
 #disconnect-btn {
     background: transparent;
     border: 1px solid #444;
@@ -387,7 +467,10 @@ input:focus {
 .rotate-msg {
     display: none;
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: black;
     z-index: 100;
     align-items: center;
@@ -396,6 +479,7 @@ input:focus {
 }
 
 @media (orientation: portrait) {
+
     /* Encourage landscape on controller if active */
     .controller-body #controller-screen .rotate-msg {
         display: flex;

@@ -219,20 +219,53 @@ function initNES() {
     // Audio Context
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
+    // Create a ScriptProcessorNode for audio output
+    // Buffer size 4096 is a balance between latency and stability
+    scriptProcessor = audioCtx.createScriptProcessor(4096, 0, 1);
+
+    scriptProcessor.onaudioprocess = function (e) {
+        const output = e.outputBuffer.getChannelData(0);
+        // If we have less data than the buffer size, we just pad with 0 (or simple ring buffer logic)
+        // For this simple implementation, we'll just play what we have or silence.
+        // A real implementation needs a ring buffer. I will implement a minimal one.
+        for (let i = 0; i < output.length; i++) {
+            if (audioBuffer.length > 0) {
+                output[i] = audioBuffer.shift();
+            } else {
+                output[i] = 0;
+            }
+        }
+    };
+
+    // Connect to destination (speakers)
+    scriptProcessor.connect(audioCtx.destination);
+
+    // Simple Audio Buffer
+    const audioBuffer = [];
+    const MAX_BUFFER_SIZE = 8192; // Prevent memory leak if not playing
+
     // Initialize JSNES
     nes = new jsnes.NES({
         onFrame: function (buffer) {
-            // buffer is an array of pixels (32-bit integers)
-            // We need to put this onto the canvas
             renderFrame(buffer);
         },
         onAudioSample: function (left, right) {
-            // Simple audio connection (buffer queueing usually needed for high quality)
-            // This is a placeholder for basic audio. JSNES usually needs a script processor.
-            // For MVP we might skip complex audio sync, but let's try basic.
+            if (audioBuffer.length < MAX_BUFFER_SIZE) {
+                audioBuffer.push(left); // Mono for now
+            }
         },
         sampleRate: 44100
     });
+
+    // Resume AudioContext on first interaction
+    const resumeAudio = () => {
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    };
+    document.addEventListener('click', resumeAudio);
+    document.addEventListener('keydown', resumeAudio);
+    document.addEventListener('touchstart', resumeAudio);
 
     // Determine canvas context
     const canvas = document.getElementById('nes-canvas');

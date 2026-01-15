@@ -81,6 +81,9 @@ document.body.addEventListener('contextmenu', e => e.preventDefault());
 
 // Setup buttons
 buttons.forEach(btn => {
+    // Skip D-Pad buttons for individual listeners, we handle them via parent
+    if (btn.classList.contains('dpad-btn')) return;
+
     // Touch Events
     btn.addEventListener('touchstart', (e) => {
         e.preventDefault(); // Prevent scroll/zoom
@@ -103,11 +106,91 @@ buttons.forEach(btn => {
     btn.addEventListener('mouseup', (e) => {
         handleInput(btn.dataset.key, 'up');
     });
-    btn.addEventListener('mouseleave', (e) => {
-        // If mouse leaves button while pressed
-        // handleInput(btn.dataset.key, 'up'); // Optional: can cause stuck keys if not careful, but prevents stuck input visually
-    });
 });
+
+// Diagonal D-Pad Handling
+const dpad = document.querySelector('.dpad');
+const dpadBtns = {
+    'UP': document.querySelector('.dpad-btn.up'),
+    'DOWN': document.querySelector('.dpad-btn.down'),
+    'LEFT': document.querySelector('.dpad-btn.left'),
+    'RIGHT': document.querySelector('.dpad-btn.right')
+};
+
+let activeKeys = new Set();
+
+dpad.addEventListener('touchstart', handleDpad, { passive: false });
+dpad.addEventListener('touchmove', handleDpad, { passive: false });
+dpad.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    clearDpad();
+});
+
+function handleDpad(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const rect = dpad.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+
+    const x = touch.clientX - centerX;
+    const y = touch.clientY - centerY;
+
+    // Calculate Angle
+    let angle = Math.atan2(y, x) * (180 / Math.PI);
+    if (angle < 0) angle += 360;
+
+    // Determine functionality based on angle (8-way)
+    // Right: 0, Down: 90, Left: 180, Up: 270
+
+    // We want sectors of 45 degrees.
+    // Right: 337.5 - 22.5
+    // DownRight: 22.5 - 67.5
+    // Down: 67.5 - 112.5
+    // DownLeft: 112.5 - 157.5
+    // Left: 157.5 - 202.5
+    // UpLeft: 202.5 - 247.5
+    // Up: 247.5 - 292.5
+    // UpRight: 292.5 - 337.5
+
+    const newKeys = new Set();
+
+    if (angle >= 337.5 || angle < 22.5) { newKeys.add('RIGHT'); }
+    else if (angle >= 22.5 && angle < 67.5) { newKeys.add('RIGHT'); newKeys.add('DOWN'); }
+    else if (angle >= 67.5 && angle < 112.5) { newKeys.add('DOWN'); }
+    else if (angle >= 112.5 && angle < 157.5) { newKeys.add('DOWN'); newKeys.add('LEFT'); }
+    else if (angle >= 157.5 && angle < 202.5) { newKeys.add('LEFT'); }
+    else if (angle >= 202.5 && angle < 247.5) { newKeys.add('LEFT'); newKeys.add('UP'); }
+    else if (angle >= 247.5 && angle < 292.5) { newKeys.add('UP'); }
+    else if (angle >= 292.5 && angle < 337.5) { newKeys.add('UP'); newKeys.add('RIGHT'); }
+
+    updateDpadState(newKeys);
+}
+
+function clearDpad() {
+    updateDpadState(new Set());
+}
+
+function updateDpadState(newKeys) {
+    // Release keys not in new set
+    activeKeys.forEach(key => {
+        if (!newKeys.has(key)) {
+            handleInput(key, 'up');
+            if (dpadBtns[key]) dpadBtns[key].classList.remove('active');
+        }
+    });
+
+    // Press keys in new set not in old set
+    newKeys.forEach(key => {
+        if (!activeKeys.has(key)) {
+            handleInput(key, 'down');
+            if (dpadBtns[key]) dpadBtns[key].classList.add('active');
+            vibrate(10);
+        }
+    });
+
+    activeKeys = newKeys;
+}
 
 function handleInput(key, type) {
     // Emit to server
