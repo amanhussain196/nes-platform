@@ -178,14 +178,23 @@ function initNES() {
         nes.loadROM(binaryString); // JSNES requires binary string
     } catch (e) {
         console.error("ROM Load Error", e);
-        alert("Emulator crashed while loading ROM.");
+        alert("Emulator Error: " + e.message + "\n\nTip: '1200-in-1' or multicart ROMs often fail. Try a single game like 'Super Mario Bros'.");
     }
 
+    // Start Loop
     // Start Loop
     function onAnimationFrame() {
         if (!gameScreen.classList.contains('hidden')) {
             window.requestAnimationFrame(onAnimationFrame);
-            nes.frame();
+            try {
+                nes.frame();
+            } catch (e) {
+                console.error("Emulator Runtime Error:", e);
+                gameScreen.classList.add('hidden');
+                gameScreen.classList.remove('active');
+                dashboardScreen.classList.remove('hidden');
+                alert("Emulator crashed during gameplay. The ROM might be incompatible.");
+            }
         }
     }
     window.requestAnimationFrame(onAnimationFrame);
