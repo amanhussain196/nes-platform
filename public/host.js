@@ -1,4 +1,7 @@
-const socket = io();
+const socket = io({
+    transports: ['websocket'],
+    upgrade: false
+});
 let sessionCode = null;
 let currentRomData = null;
 let nes = null;
