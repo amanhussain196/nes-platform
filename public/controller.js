@@ -32,19 +32,32 @@ function joinSession(code) {
     socket.emit('join_controller', code);
 }
 
-socket.on('controller_connected', (success) => {
+socket.on('controller_connected', (data) => {
+    // data can be boolean (legacy) or object { success, player, error }
+    const success = typeof data === 'object' ? data.success : data;
+
     if (success) {
         loginScreen.classList.add('hidden');
         loginScreen.classList.remove('active');
         controllerScreen.classList.remove('hidden');
         controllerScreen.style.zIndex = 20; // Ensure on top
 
+        // Update functionality based on player number
+        const player = data.player || 1;
+        document.querySelector('.logo').innerHTML = `PLAYER <span>${player}</span>`;
+
+        // Show reset button only for Player 1
+        if (player === 1) {
+            document.getElementById('reset-btn').style.display = 'inline-block';
+        }
+
         // Fullscreen request (optional, requires user interaction usually)
         if (document.documentElement.requestFullscreen) {
             // document.documentElement.requestFullscreen().catch(e => {});
         }
     } else {
-        showError("Invalid Session Code or Host not found.");
+        const error = data.error || "Invalid Session Code or Host not found.";
+        showError(error);
     }
 });
 
@@ -107,4 +120,10 @@ function vibrate(ms) {
 
 document.getElementById('disconnect-btn').addEventListener('click', () => {
     location.href = '/';
+});
+
+document.getElementById('reset-btn').addEventListener('click', () => {
+    if (confirm('Reset current game?')) {
+        socket.emit('reset_game');
+    }
 });

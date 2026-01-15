@@ -91,26 +91,56 @@ io.on('connection', (socket) => {
     // Controller (Phone) joins
     socket.on('join_controller', (code) => {
         const room = io.sockets.adapter.rooms.get(code);
-        // We might want to check if the room actually has a host, but for now existence is enough
         if (room) {
-            socket.join(code);
-            socket.data.room = code;
+            // Find which slots are taken.
+            // We iterate through sockets in the room and check their assigned data.player
+            const clients = Array.from(room);
+            let p1Taken = false;
+            let p2Taken = false;
 
-            socket.emit('controller_connected', true);
-            io.to(code).emit('player_joined', socket.id); // Notify host
+            clients.forEach(clientId => {
+                const s = io.sockets.sockets.get(clientId);
+                if (s && s.data.player === 1) p1Taken = true;
+                if (s && s.data.player === 2) p2Taken = true;
+            });
 
-            console.log(`Controller joined session: ${code}`);
+            let assignedPlayer = null;
+            if (!p1Taken) assignedPlayer = 1;
+            else if (!p2Taken) assignedPlayer = 2;
+
+            if (assignedPlayer) {
+                socket.join(code);
+                socket.data.room = code;
+                socket.data.player = assignedPlayer;
+                socket.data.isController = true;
+
+                socket.emit('controller_connected', { success: true, player: assignedPlayer });
+                io.to(code).emit('player_joined', { id: socket.id, player: assignedPlayer }); // Notify host
+
+                console.log(`Controller joined session: ${code} as Player ${assignedPlayer}`);
+            } else {
+                // Room full
+                socket.emit('controller_connected', { success: false, error: "Room full (2 players max)" });
+            }
         } else {
-            socket.emit('controller_connected', false);
+            socket.emit('controller_connected', { success: false, error: "Session not found" });
         }
     });
 
     // Handle Input Events
     socket.on('input', (data) => {
-        // data examples: { button: 'A', type: 'down' } or { button: 'LEFT', type: 'up' }
-        if (socket.data.room) {
+        if (socket.data.room && socket.data.player) {
             // Forward to everyone in room (specifically the host)
-            socket.to(socket.data.room).emit('input', data);
+            // Attach the player number so the host knows who sent it
+            io.to(socket.data.room).emit('input', { ...data, player: socket.data.player });
+        }
+    });
+
+    // Handle Reset Game (P1 only)
+    socket.on('reset_game', () => {
+        if (socket.data.room && socket.data.player === 1) {
+            io.to(socket.data.room).emit('reset_game');
+            console.log(`Player 1 reset the game in room ${socket.data.room}`);
         }
     });
 
@@ -120,6 +150,9 @@ io.on('connection', (socket) => {
             if (socket.data.room) {
                 io.to(socket.data.room).emit('host_disconnected');
             }
+        } else if (socket.data.isController) {
+            console.log(`Player ${socket.data.player} disconnected from ${socket.data.room}`);
+            io.to(socket.data.room).emit('player_left', socket.data.player);
         }
     });
 });

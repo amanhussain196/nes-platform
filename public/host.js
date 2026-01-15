@@ -50,17 +50,67 @@ socket.on('session_created', (code) => {
     loadGames();
 });
 
-socket.on('player_joined', (id) => {
-    console.log('Player joined:', id);
-    controllerDot.classList.add('connected');
-    controllerText.innerText = "Player 1 Connected";
+socket.on('player_joined', (data) => {
+    // data: { id: '...', player: 1 or 2 }
+    console.log(`Player ${data.player} joined:`, data.id);
+    if (data.player === 1) playerParams.p1 = true;
+    if (data.player === 2) playerParams.p2 = true;
+    renderStatus();
 
     // Notify user on dashboard too if still there
     const status = document.createElement('div');
     status.style.color = 'var(--secondary-color)';
     status.style.marginTop = '1rem';
-    status.innerText = "Controller Connected!";
+    status.innerText = `Player ${data.player} Connected!`;
     document.querySelector('.connect-instruction').appendChild(status);
+});
+
+socket.on('player_left', (playerNum) => {
+    console.log(`Player ${playerNum} left`);
+    if (playerNum === 1) playerParams.p1 = false;
+    if (playerNum === 2) playerParams.p2 = false;
+    renderStatus();
+});
+
+let playerParams = { p1: false, p2: false };
+
+function renderStatus() {
+    const text = [];
+    if (playerParams.p1) text.push("P1");
+    if (playerParams.p2) text.push("P2");
+
+    if (text.length > 0) {
+        controllerDot.classList.add('connected');
+        controllerText.innerText = text.join(" & ") + " Connected";
+    } else {
+        controllerDot.classList.remove('connected');
+        controllerText.innerText = "Waiting for controller...";
+    }
+}
+
+// Handle Socket Input
+socket.on('input', (data) => {
+    // data: { button: 'UP', type: 'down'/'up', player: 1 or 2 }
+    if (!nes) return;
+
+    const button = KEYMAP[data.button];
+    if (button === undefined) return;
+
+    // Default to player 1 if not specified (legacy fallback)
+    const player = data.player || 1;
+
+    if (data.type === 'down') {
+        nes.buttonDown(player, button);
+    } else {
+        nes.buttonUp(player, button);
+    }
+});
+
+socket.on('reset_game', () => {
+    if (nes) {
+        nes.reset();
+        console.log("Game Reset!");
+    }
 });
 
 socket.on('host_disconnected', () => {
@@ -178,7 +228,7 @@ function initNES() {
         nes.loadROM(binaryString); // JSNES requires binary string
     } catch (e) {
         console.error("ROM Load Error", e);
-        alert("Emulator Error: " + e.message + "\n\nTip: '1200-in-1' or multicart ROMs often fail. Try a single game like 'Super Mario Bros'.");
+        alert("Emulator Error: " + e.message + "\n\nThis emulator supports standard Mappers: 0, 1, 2, 3, 4.\nYour ROM uses an unsupported mapper. Please try a standard version (e.g. 'Super Mario Bros (USA).nes').");
     }
 
     // Start Loop
