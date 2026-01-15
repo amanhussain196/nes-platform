@@ -90,16 +90,16 @@ function renderStatus() {
 
 // Handle Socket Input
 socket.on('input', (data) => {
-    // data: { button: 'UP', type: 'down'/'up', player: 1 or 2 }
+    // data: { b: 'UP', t: 1/0, p: 1 or 2 }
     if (!nes) return;
 
-    const button = KEYMAP[data.button];
+    const button = KEYMAP[data.b];
     if (button === undefined) return;
 
-    // Default to player 1 if not specified (legacy fallback)
-    const player = data.player || 1;
+    // Default to player 1 if not specified
+    const player = data.p || 1;
 
-    if (data.type === 'down') {
+    if (data.t === 1) { // 1 = down
         nes.buttonDown(player, button);
     } else {
         nes.buttonUp(player, button);

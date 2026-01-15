@@ -131,8 +131,9 @@ io.on('connection', (socket) => {
     socket.on('input', (data) => {
         if (socket.data.room && socket.data.player) {
             // Forward to everyone in room (specifically the host)
-            // Attach the player number so the host knows who sent it
-            io.to(socket.data.room).emit('input', { ...data, player: socket.data.player });
+            // Use volatile so we don't buffer old inputs if network is slow
+            // socket.to(room) sends to host (and other player) but not back to sender
+            socket.to(socket.data.room).volatile.emit('input', { b: data.b, t: data.t, p: socket.data.player });
         }
     });
 

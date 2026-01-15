@@ -1,4 +1,7 @@
-const socket = io();
+const socket = io({
+    transports: ['websocket'],
+    upgrade: false
+});
 const urlParams = new URLSearchParams(window.location.search);
 let sessionCode = urlParams.get('code');
 
@@ -83,7 +86,7 @@ buttons.forEach(btn => {
         e.preventDefault(); // Prevent scroll/zoom
         handleInput(btn.dataset.key, 'down');
         btn.classList.add('active'); // Visual feedback if needed
-        vibrate(50);
+        vibrate(10);
     }, { passive: false });
 
     btn.addEventListener('touchend', (e) => {
@@ -108,8 +111,11 @@ buttons.forEach(btn => {
 
 function handleInput(key, type) {
     // Emit to server
-    // Optimized payload: { b: 'A', t: 'd' } could be smaller, but readable is fine for local LAN
-    socket.emit('input', { button: key, type: type });
+    // Optimized payload: { b: 'A', t: 1/0 }
+    const status = type === 'down' ? 1 : 0;
+    // volatile emit from client side too? socket.io-client might not expose volatile easily on emit without library update, 
+    // but just sending minimal data helps.
+    socket.emit('input', { b: key, t: status });
 }
 
 function vibrate(ms) {
