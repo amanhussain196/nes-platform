@@ -109,10 +109,28 @@ socket.on('input', (data) => {
     // Default to player 1 if not specified
     const player = data.p || 1;
 
-    if (data.t === 1) { // 1 = down
-        nes.buttonDown(player, button);
+    // Check if in Menu or Game
+    if (gameScreen.classList.contains('hidden')) {
+        // We are on dashboard
+        if (player === 1 && data.t === 1) { // Only P1, Input Down
+            if (data.b === 'RIGHT') updateGameSelection(selectedGameIndex + 1);
+            if (data.b === 'LEFT') updateGameSelection(selectedGameIndex - 1);
+            if (data.b === 'DOWN') updateGameSelection(selectedGameIndex + 4); // Grid logic approx
+            if (data.b === 'UP') updateGameSelection(selectedGameIndex - 4);
+
+            if (data.b === 'START' || data.b === 'A') {
+                if (gameListRoms[selectedGameIndex]) {
+                    startGame(gameListRoms[selectedGameIndex].filename);
+                }
+            }
+        }
     } else {
-        nes.buttonUp(player, button);
+        // We are in Game
+        if (data.t === 1) { // 1 = down
+            nes.buttonDown(player, button);
+        } else {
+            nes.buttonUp(player, button);
+        }
     }
 });
 
@@ -151,20 +169,24 @@ socket.on('host_disconnected', () => {
 });
 
 // --- Game Logic ---
+let gameListRoms = [];
+let selectedGameIndex = 0;
 
 function loadGames() {
     fetch('/api/roms')
         .then(res => res.json())
         .then(roms => {
+            gameListRoms = roms;
             gameList.innerHTML = '';
             if (roms.length === 0) {
                 document.getElementById('no-games-msg').classList.remove('hidden');
                 return;
             }
 
-            roms.forEach(rom => {
+            roms.forEach((rom, index) => {
                 const card = document.createElement('div');
                 card.className = 'game-card';
+                card.id = `game-card-${index}`;
                 card.innerHTML = `
                     <span class="icon">🎮</span>
                     <div class="name">${rom.name}</div>
@@ -172,8 +194,29 @@ function loadGames() {
                 card.onclick = () => startGame(rom.filename);
                 gameList.appendChild(card);
             });
+
+            // Navigate to first
+            updateGameSelection(0);
         });
 }
+
+function updateGameSelection(index) {
+    if (index < 0) index = gameListRoms.length - 1;
+    if (index >= gameListRoms.length) index = 0;
+
+    selectedGameIndex = index;
+
+    // Update Visuals
+    document.querySelectorAll('.game-card').forEach((el, i) => {
+        if (i === selectedGameIndex) {
+            el.classList.add('selected');
+            el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        } else {
+            el.classList.remove('selected');
+        }
+    });
+}
+
 
 // Helper to safely convert buffer to binary string
 function binaryStringFromBuffer(buffer) {

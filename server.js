@@ -61,10 +61,18 @@ function getLocalIp() {
 
 // Generate QR Code for session
 app.get('/api/qr/:code', async (req, res) => {
-    const localIp = getLocalIp();
     const port = process.env.PORT || 3000;
+    let baseUrl;
+
+    if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+        baseUrl = `https://${process.env.RAILWAY_PUBLIC_DOMAIN}`;
+    } else {
+        const localIp = getLocalIp();
+        baseUrl = `http://${localIp}:${port}`;
+    }
+
     // Use local IP so the phone can actually connect on LAN
-    const url = `http://${localIp}:${port}/controller.html?code=${req.params.code}`;
+    const url = `${baseUrl}/controller.html?code=${req.params.code}`;
 
     try {
         const qr = await QRCode.toDataURL(url);

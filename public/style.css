@@ -173,10 +173,12 @@ body {
     transition: all 0.2s ease;
 }
 
-.game-card:hover {
-    background: rgba(255, 255, 255, 0.1);
+.game-card:hover,
+.game-card.selected {
+    background: rgba(255, 255, 255, 0.2);
     border-color: var(--secondary-color);
     transform: translateY(-5px);
+    box-shadow: 0 0 15px var(--secondary-color);
 }
 
 .game-card .icon {

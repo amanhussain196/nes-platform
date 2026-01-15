@@ -127,8 +127,12 @@ dpad.addEventListener('touchend', (e) => {
 });
 
 function handleDpad(e) {
-    e.preventDefault();
-    const touch = e.touches[0];
+    if (e.cancelable) e.preventDefault();
+    // Use targetTouches to only get touches that started on the D-pad
+    // This prevents reading the coordinates of a finger holding an Action button elsewhere
+    const touch = e.targetTouches[0];
+    if (!touch) return;
+
     const rect = dpad.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
