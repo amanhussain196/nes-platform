@@ -115,7 +115,7 @@ function handleInput(key, type) {
     const status = type === 'down' ? 1 : 0;
     // volatile emit from client side too? socket.io-client might not expose volatile easily on emit without library update, 
     // but just sending minimal data helps.
-    socket.emit('input', { b: key, t: status });
+    socket.emit('input', { b: key, t: status, ts: Date.now() });
 }
 
 function vibrate(ms) {

@@ -90,8 +90,15 @@ function renderStatus() {
 
 // Handle Socket Input
 socket.on('input', (data) => {
-    // data: { b: 'UP', t: 1/0, p: 1 or 2 }
+    // data: { b: 'UP', t: 1/0, p: 1 or 2, ts: <timestamp> }
     if (!nes) return;
+
+    // Measurement
+    if (data.ts) {
+        const now = Date.now();
+        const latency = now - data.ts;
+        updatePingDisplay(latency);
+    }
 
     const button = KEYMAP[data.b];
     if (button === undefined) return;
@@ -105,6 +112,29 @@ socket.on('input', (data) => {
         nes.buttonUp(player, button);
     }
 });
+
+let pingTimeout;
+function updatePingDisplay(ms) {
+    let el = document.getElementById('ping-display');
+    if (!el) {
+        el = document.createElement('div');
+        el.id = 'ping-display';
+        el.style.position = 'absolute';
+        el.style.top = '10px';
+        el.style.right = '10px';
+        el.style.color = 'lime';
+        el.style.fontFamily = 'monospace';
+        el.style.background = 'rgba(0,0,0,0.5)';
+        el.style.padding = '5px';
+        document.body.appendChild(el);
+    }
+    el.innerText = `Ping: ${ms}ms`;
+
+    // Color coding
+    if (ms < 50) el.style.color = 'lime';
+    else if (ms < 100) el.style.color = 'yellow';
+    else el.style.color = 'red';
+}
 
 socket.on('reset_game', () => {
     if (nes) {

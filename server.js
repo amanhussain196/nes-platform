@@ -12,7 +12,10 @@ const io = new Server(server, {
     cors: {
         origin: "*",
         methods: ["GET", "POST"]
-    }
+    },
+    transports: ['websocket'], // Force WebSocket only
+    perMessageDeflate: false, // Disable compression for lower latency on small packets
+    httpCompression: false
 });
 
 // Serve frontend files
@@ -133,7 +136,13 @@ io.on('connection', (socket) => {
             // Forward to everyone in room (specifically the host)
             // Use volatile so we don't buffer old inputs if network is slow
             // socket.to(room) sends to host (and other player) but not back to sender
-            socket.to(socket.data.room).volatile.emit('input', { b: data.b, t: data.t, p: socket.data.player });
+            // Include timestamp (ts) for latency measurement
+            socket.to(socket.data.room).volatile.emit('input', {
+                b: data.b,
+                t: data.t,
+                p: socket.data.player,
+                ts: data.ts
+            });
         }
     });
 
